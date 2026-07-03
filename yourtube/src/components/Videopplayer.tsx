@@ -52,6 +52,8 @@ export default function VideoPlayer({ video, onPlayNext }: VideoPlayerProps) {
 
   const limit = limits[userPlan] || 300;
 
+  const [hasLoadedTime, setHasLoadedTime] = useState<boolean>(false);
+
   // Load cumulative time from localStorage on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -59,15 +61,16 @@ export default function VideoPlayer({ video, onPlayNext }: VideoPlayerProps) {
       if (savedTime) {
         setCumulativeTime(parseInt(savedTime, 10));
       }
+      setHasLoadedTime(true);
     }
   }, []);
 
-  // Update localStorage when cumulativeTime changes
+  // Update localStorage when cumulativeTime changes, only after initial load has finished
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (hasLoadedTime && typeof window !== "undefined") {
       localStorage.setItem("yourtube_watch_time", cumulativeTime.toString());
     }
-  }, [cumulativeTime]);
+  }, [cumulativeTime, hasLoadedTime]);
 
   // Dynamically load Razorpay checkout script
   useEffect(() => {
