@@ -104,7 +104,7 @@ const Comments = ({ videoId }: any) => {
     }
 
     setIsSubmitting(true);
-    
+
     // Get city name using ipapi
     let userCity = "Unknown City";
     try {
@@ -276,8 +276,6 @@ const Comments = ({ videoId }: any) => {
           </Avatar>
           <div className="flex-1 space-y-2">
             <Textarea
-              id="comment-input"
-              name="comment-input"
               placeholder="Add a comment..."
               value={newComment}
               onChange={(e: any) => setNewComment(e.target.value)}
@@ -332,8 +330,6 @@ const Comments = ({ videoId }: any) => {
                 {editingCommentId === comment._id ? (
                   <div className="space-y-2">
                     <Textarea
-                      id={`edit-comment-${comment._id}`}
-                      name="edit-comment"
                       value={editText}
                       onChange={(e) => setEditText(e.target.value)}
                     />
@@ -377,9 +373,8 @@ const Comments = ({ videoId }: any) => {
                       {/* Likes */}
                       <button
                         onClick={() => handleLikeComment(comment._id)}
-                        className={`flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors ${
-                          comment.likes?.includes(user?._id || "") ? "text-indigo-600 dark:text-indigo-400 font-semibold" : ""
-                        }`}
+                        className={`flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors ${comment.likes?.includes(user?._id || "") ? "text-indigo-600 dark:text-indigo-400 font-semibold" : ""
+                          }`}
                       >
                         <ThumbsUp className="w-3.5 h-3.5" />
                         <span>{comment.likes?.length || 0}</span>
@@ -388,9 +383,8 @@ const Comments = ({ videoId }: any) => {
                       {/* Dislikes */}
                       <button
                         onClick={() => handleDislikeComment(comment._id)}
-                        className={`flex items-center gap-1 hover:text-red-500 transition-colors ${
-                          comment.dislikes?.includes(user?._id || "") ? "text-red-500 font-semibold" : ""
-                        }`}
+                        className={`flex items-center gap-1 hover:text-red-500 transition-colors ${comment.dislikes?.includes(user?._id || "") ? "text-red-500 font-semibold" : ""
+                          }`}
                       >
                         <ThumbsDown className="w-3.5 h-3.5" />
                         <span>{comment.dislikes?.length || 0}</span>
