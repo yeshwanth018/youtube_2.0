@@ -21,7 +21,7 @@ const ChannelHeader = ({ channel, user }: any) => {
           <div className="flex-1 space-y-2">
             <h1 className="text-2xl md:text-4xl font-bold">{channel?.channelname}</h1>
             <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-              <span>@{channel?.channelname.toLowerCase().replace(/\s+/g, "")}</span>
+              <span className="bg-muted text-black px-2 py-1 rounded">@{channel?.channelname.toLowerCase().replace(/\s+/g, "")}</span>
             </div>
             {channel?.description && (
               <p className="text-sm text-gray-700 max-w-2xl">

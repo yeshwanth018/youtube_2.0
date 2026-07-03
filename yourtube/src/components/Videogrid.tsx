@@ -9,9 +9,10 @@ const Videogrid = () => {
     const fetchvideo = async () => {
       try {
         const res = await axiosInstance.get("/video/getall");
+        console.log("Videogrid: fetched videos =>", res.data);
         setvideo(res.data);
       } catch (error) {
-        console.log(error);
+        console.log("Videogrid: fetch error =>", error);
       } finally {
         setloading(false);
       }
@@ -51,8 +52,16 @@ const Videogrid = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {loading ? (
         <>Loading..</>
-      ) : (
+      ) : videos && videos.length > 0 ? (
         videos.map((video: any) => <Videocard key={video._id} video={video} />)
+      ) : (
+        <div>
+          <p>No videos available</p>
+          <details className="mt-2 p-2 bg-gray-50 text-sm text-gray-700">
+            <summary className="cursor-pointer">Debug: show fetched value</summary>
+            <pre className="whitespace-pre-wrap">{JSON.stringify(videos, null, 2)}</pre>
+          </details>
+        </div>
       )}
     </div>
   );

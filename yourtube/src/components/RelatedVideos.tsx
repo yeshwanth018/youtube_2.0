@@ -14,17 +14,17 @@ interface RelatedVideosProps {
 const vid = "/video/vdo.mp4";
 export default function RelatedVideos({ videos }: RelatedVideosProps) {
   return (
-    <div className="space-y-2">
-      {videos.map((video) => (
+    <div className="space-y-3">
+      {videos?.map((video) => (
         <Link
           key={video._id}
           href={`/watch/${video._id}`}
-          className="flex gap-2 group"
+          className="flex gap-3 items-start"
         >
-          <div className="relative w-40 aspect-video bg-gray-100 rounded overflow-hidden flex-shrink-0">
+          <div className="w-28 aspect-video bg-gray-100 rounded overflow-hidden flex-shrink-0">
             <video
               src={vid}
-              className="object-cover group-hover:scale-105 transition-transform duration-200"
+              className="w-full h-full object-cover"
             />
           </div>
           <div className="flex-1 min-w-0">
@@ -33,8 +33,7 @@ export default function RelatedVideos({ videos }: RelatedVideosProps) {
             </h3>
             <p className="text-xs text-gray-600 mt-1">{video.videochanel}</p>
             <p className="text-xs text-gray-600">
-              {video.views.toLocaleString()} views •{" "}
-              {formatDistanceToNow(new Date(video.createdAt))} ago
+              {video.views?.toLocaleString()} views • {formatDistanceToNow(new Date(video.createdAt))} ago
             </p>
           </div>
         </Link>

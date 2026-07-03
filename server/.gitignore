@@ -1,0 +1,5 @@
+node_modules/
+.env
+uploads/*-vdo-long.mp4
+uploads/test-*.mp4
+*.log

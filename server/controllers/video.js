@@ -33,3 +33,18 @@ export const getallvideo = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
+
+export const getRemoteVideos = async (req, res) => {
+  try {
+    const remoteUrl = "https://you-tube2-0-six-backend.onrender.com/video/getall";
+    const response = await fetch(remoteUrl);
+    if (!response.ok) {
+      return res.status(response.status).json({ message: "Remote fetch failed" });
+    }
+    const data = await response.json();
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error(" getRemoteVideos error:", error);
+    return res.status(500).json({ message: "Something went wrong fetching remote videos" });
+  }
+};

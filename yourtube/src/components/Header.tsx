@@ -1,5 +1,5 @@
 import { Bell, Menu, Mic, Search, User, VideoIcon } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { Input } from "./ui/input";
@@ -25,7 +25,12 @@ const Header = () => {
   // };
   const [searchQuery, setSearchQuery] = useState("");
   const [isdialogeopen, setisdialogeopen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -38,10 +43,10 @@ const Header = () => {
     }
   };
   return (
-    <header className="flex items-center justify-between px-4 py-2 bg-white border-b">
+    <header className="flex items-center justify-between px-4 py-2 bg-card text-card-foreground border-b border-border transition-colors duration-300">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon">
-          <Menu className="w-6 h-6" />
+          <Menu className="w-6 h-6 text-foreground" />
         </Button>
         <Link href="/" className="flex items-center gap-1">
           <div className="bg-red-600 p-1 rounded">
@@ -49,8 +54,8 @@ const Header = () => {
               <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
             </svg>
           </div>
-          <span className="text-xl font-medium">YourTube</span>
-          <span className="text-xs text-gray-400 ml-1">IN</span>
+          <span className="text-[20px] text-foreground font-bold">YourTube</span>
+          <span className="text-xs text-muted-foreground ml-1">IN</span>
         </Link>
       </div>
       <form
@@ -64,27 +69,27 @@ const Header = () => {
             value={searchQuery}
             onKeyPress={handleKeypress}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="rounded-l-full border-r-0 focus-visible:ring-0"
+            className="rounded-l-full border-r-0 focus-visible:ring-0 bg-background text-foreground placeholder-muted-foreground border border-border"
           />
           <Button
             type="submit"
-            className="rounded-r-full px-6 bg-gray-50 hover:bg-gray-100 text-gray-600 border border-l-0"
+            className="rounded-r-full px-4 bg-accent hover:bg-accent/80 text-accent-foreground border border-l-0 border-border"
           >
             <Search className="w-5 h-5" />
           </Button>
         </div>
         <Button variant="ghost" size="icon" className="rounded-full">
-          <Mic className="w-5 h-5" />
+          <Mic className="w-5 h-5 text-foreground" />
         </Button>
       </form>
       <div className="flex items-center gap-2">
-        {user ? (
+        {mounted && user ? (
           <>
             <Button variant="ghost" size="icon">
-              <VideoIcon className="w-6 h-6" />
+              <VideoIcon className="w-6 h-6 text-foreground" />
             </Button>
             <Button variant="ghost" size="icon">
-              <Bell className="w-6 h-6" />
+              <Bell className="w-6 h-6 text-foreground" />
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -98,7 +103,7 @@ const Header = () => {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuContent className="w-56 bg-card text-card-foreground border-border" align="end" forceMount>
                 {user?.channelname ? (
                   <DropdownMenuItem asChild>
                     <Link href={`/channel/${user?._id}`}>Your channel</Link>
@@ -124,7 +129,10 @@ const Header = () => {
                 <DropdownMenuItem asChild>
                   <Link href="/watch-later">Watch later</Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/settings">Settings</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-border" />
                 <DropdownMenuItem onClick={logout}>Sign out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -132,7 +140,8 @@ const Header = () => {
         ) : (
           <>
             <Button
-              className="flex items-center gap-2"
+              variant="outline"
+              className="flex items-center gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold rounded-full"
               onClick={handlegooglesignin}
             >
               <User className="w-4 h-4" />

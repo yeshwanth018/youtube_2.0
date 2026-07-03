@@ -2,15 +2,17 @@ import ChannelHeader from "@/components/ChannelHeader";
 import Channeltabs from "@/components/Channeltabs";
 import ChannelVideos from "@/components/ChannelVideos";
 import VideoUploader from "@/components/VideoUploader";
+import DownloadsContent from "@/components/DownloadsContent";
 import { useUser } from "@/lib/AuthContext";
-import { notFound } from "next/navigation";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useState } from "react";
 
 const index = () => {
   const router = useRouter();
   const { id } = router.query;
   const { user } = useUser();
+  const [activeTab, setActiveTab] = useState("videos");
+
   // const user: any = {
   //   id: "1",
   //   name: "John Doe",
@@ -48,17 +50,37 @@ const index = () => {
         createdAt: new Date(Date.now() - 86400000).toISOString(),
       },
     ];
+
+    const renderTabContent = () => {
+      switch (activeTab) {
+        case "downloads":
+          return (
+            <div className="px-4 pb-8">
+              <DownloadsContent />
+            </div>
+          );
+        case "videos":
+        case "home":
+        default:
+          return (
+            <>
+              <div className="px-4 pb-8">
+                <VideoUploader channelId={id} channelName={channel?.channelname} />
+              </div>
+              <div className="px-4 pb-8">
+                <ChannelVideos videos={videos} />
+              </div>
+            </>
+          );
+      }
+    };
+
     return (
       <div className="flex-1 min-h-screen bg-white">
         <div className="max-w-full mx-auto">
           <ChannelHeader channel={channel} user={user} />
-          <Channeltabs />
-          <div className="px-4 pb-8">
-            <VideoUploader channelId={id} channelName={channel?.channelname} />
-          </div>
-          <div className="px-4 pb-8">
-            <ChannelVideos videos={videos} />
-          </div>
+          <Channeltabs activeTab={activeTab} onTabChange={setActiveTab} />
+          {renderTabContent()}
         </div>
       </div>
     );
