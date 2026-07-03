@@ -52,8 +52,6 @@ export default function VideoPlayer({ video, onPlayNext }: VideoPlayerProps) {
 
   const limit = limits[userPlan] || 300;
 
-  const [hasLoadedTime, setHasLoadedTime] = useState<boolean>(false);
-
   // Load cumulative time from localStorage on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -61,16 +59,15 @@ export default function VideoPlayer({ video, onPlayNext }: VideoPlayerProps) {
       if (savedTime) {
         setCumulativeTime(parseInt(savedTime, 10));
       }
-      setHasLoadedTime(true);
     }
   }, []);
 
-  // Update localStorage when cumulativeTime changes, only after initial load has finished
+  // Update localStorage when cumulativeTime changes
   useEffect(() => {
-    if (hasLoadedTime && typeof window !== "undefined") {
+    if (typeof window !== "undefined") {
       localStorage.setItem("yourtube_watch_time", cumulativeTime.toString());
     }
-  }, [cumulativeTime, hasLoadedTime]);
+  }, [cumulativeTime]);
 
   // Dynamically load Razorpay checkout script
   useEffect(() => {
@@ -411,13 +408,12 @@ export default function VideoPlayer({ video, onPlayNext }: VideoPlayerProps) {
         {/* Gesture visual feedback overlay */}
         {gestureFeedback && (
           <div
-            className={`absolute top-0 flex items-center justify-center pointer-events-none z-20 ${
-              gestureFeedback.position === "left"
+            className={`absolute top-0 flex items-center justify-center pointer-events-none z-20 ${gestureFeedback.position === "left"
                 ? "left-0 w-[30%]"
                 : gestureFeedback.position === "right"
-                ? "right-0 w-[30%]"
-                : "left-[30%] w-[40%]"
-            }`}
+                  ? "right-0 w-[30%]"
+                  : "left-[30%] w-[40%]"
+              }`}
             style={{ height: "85%" }}
           >
             <div className="bg-black/75 backdrop-blur-md rounded-full p-5 flex flex-col items-center gap-1.5 animate-in fade-in zoom-in-95 duration-200 border border-white/10 shadow-2xl">
@@ -465,133 +461,257 @@ export default function VideoPlayer({ video, onPlayNext }: VideoPlayerProps) {
           onPause={handlePause}
           onEnded={handlePause}
         >
-          <source
-            src={getFileUrl(video?.filepath)}
-            type="video/mp4"
-          />
-          Your browser does not support the video tag.
-        </video>
-      </div>
-
-      {/* Un-dismissible Limit Modal Overlay */}
-      {showLimitModal && (
-        <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-sm flex flex-col items-center justify-center p-4 z-40 text-center text-white overflow-y-auto">
-          {showMockPayment ? (
-            /* Mock Payment Simulator Box */
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-sm w-full shadow-2xl flex flex-col items-center animate-in fade-in zoom-in duration-250">
-              <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center mb-4 text-amber-500">
-                <Crown className="w-6 h-6 fill-amber-500" />
+              style={{ height: "85%" }}
+            >
+              <div className="bg-black/75 backdrop-blur-md rounded-full p-5 flex flex-col items-center gap-1.5 animate-in fade-in zoom-in-95 duration-200 border border-white/10 shadow-2xl">
+                {gestureFeedback.type === "play" && (
+                  <Play className="w-8 h-8 text-white fill-white" />
+                )}
+                {gestureFeedback.type === "pause" && (
+                  <Pause className="w-8 h-8 text-white fill-white" />
+                )}
+                {gestureFeedback.type === "rewind" && (
+                  <Rewind className="w-8 h-8 text-white fill-white" />
+                )}
+                {gestureFeedback.type === "forward" && (
+                  <FastForward className="w-8 h-8 text-white fill-white" />
+                )}
+                {gestureFeedback.type === "nextVideo" && (
+                  <SkipForward className="w-8 h-8 text-white fill-white" />
+                )}
+                {gestureFeedback.type === "comments" && (
+                  <MessageCircle className="w-8 h-8 text-white fill-white" />
+                )}
+                {gestureFeedback.type === "closeTab" && (
+                  <X className="w-8 h-8 text-white" />
+                )}
+                {gestureFeedback.type === "fullscreen" && (
+                  <Play className="w-8 h-8 text-white fill-white" />
+                )}
+                {gestureFeedback.text && (
+                  <span className="text-white text-xs font-bold tracking-wider">
+                    {gestureFeedback.text}
+                  </span>
+                )}
               </div>
-              <h3 className="text-lg font-bold mb-1">Mock Payment Gateway</h3>
-              <p className="text-xs text-slate-400 mb-4">
-                Simulating secure payment verification.
-              </p>
-              <div className="bg-slate-950/50 border border-slate-800 rounded-xl p-4 w-full text-left space-y-2 text-xs mb-6">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Tier Selected</span>
-                  <span className="font-semibold text-slate-300 capitalize">{mockOrder?.tier}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Amount</span>
-                  <span className="font-semibold text-amber-400">₹{(mockOrder?.amount || 0) / 100}.00</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Order ID</span>
-                  <span className="font-mono text-slate-400 truncate max-w-[180px]">{mockOrder?.id}</span>
-                </div>
-              </div>
-              <button
-                onClick={handleMockPaymentSuccess}
-                disabled={isProcessing}
-                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all text-sm mb-2 disabled:opacity-50"
-              >
-                {isProcessing ? "Processing..." : "Simulate Payment Success"}
-              </button>
-              <button
-                onClick={() => setShowMockPayment(false)}
-                disabled={isProcessing}
-                className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 px-4 rounded-xl text-sm font-semibold transition-all"
-              >
-                Cancel Simulation
-              </button>
-            </div>
-          ) : (
-            /* Pricing Grid Screen */
-            <div className="max-w-2xl w-full flex flex-col items-center animate-in fade-in duration-200">
-              <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mb-3 text-red-500">
-                <Lock className="w-6 h-6" />
-              </div>
-              <h2 className="text-lg md:text-2xl font-black bg-gradient-to-r from-white via-red-200 to-amber-200 bg-clip-text text-transparent mb-1">
-                Time Limit Reached for Your Plan
-              </h2>
-              <p className="text-xs md:text-sm text-slate-400 mb-6">
-                You have watched {Math.floor(cumulativeTime / 60)}m {cumulativeTime % 60}s. Upgrade to a tier to continue watching!
-              </p>
-
-              {/* Grid */}
-              <div className="grid grid-cols-3 gap-3 w-full mb-6 max-w-lg">
-                {/* Bronze */}
-                <div className="bg-slate-900/60 border border-amber-800/40 rounded-xl p-3 flex flex-col justify-between items-center transition-all hover:border-amber-700/60 hover:bg-slate-900">
-                  <div className="text-center">
-                    <span className="text-[10px] font-bold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full uppercase tracking-wider">Bronze</span>
-                    <div className="text-xl md:text-2xl font-black mt-2 text-white">₹10</div>
-                    <div className="text-[9px] text-slate-400 mt-1 flex items-center justify-center gap-1">
-                      <Clock className="w-3 h-3 text-slate-500" /> 7 Mins Limit
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleUpgrade("bronze")}
-                    disabled={isProcessing}
-                    className="mt-4 w-full bg-amber-700 hover:bg-amber-600 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] transition-all disabled:opacity-50"
-                  >
-                    Upgrade
-                  </button>
-                </div>
-
-                {/* Silver */}
-                <div className="bg-slate-900/60 border border-slate-700/40 rounded-xl p-3 flex flex-col justify-between items-center relative overflow-hidden transition-all hover:border-slate-600/60 hover:bg-slate-900">
-                  <div className="absolute top-0 right-0 bg-red-600 text-white text-[7px] font-extrabold px-1.5 py-0.5 rounded-bl">BEST</div>
-                  <div className="text-center">
-                    <span className="text-[10px] font-bold text-slate-300 bg-slate-500/10 px-2 py-0.5 rounded-full uppercase tracking-wider">Silver</span>
-                    <div className="text-xl md:text-2xl font-black mt-2 text-white">₹50</div>
-                    <div className="text-[9px] text-slate-400 mt-1 flex items-center justify-center gap-1">
-                      <Clock className="w-3 h-3 text-slate-500" /> 10 Mins Limit
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleUpgrade("silver")}
-                    disabled={isProcessing}
-                    className="mt-4 w-full bg-red-600 hover:bg-red-500 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] transition-all disabled:opacity-50"
-                  >
-                    Upgrade
-                  </button>
-                </div>
-
-                {/* Gold */}
-                <div className="bg-slate-900/60 border border-amber-500/40 rounded-xl p-3 flex flex-col justify-between items-center transition-all hover:border-amber-400/60 hover:bg-slate-900">
-                  <div className="text-center">
-                    <span className="text-[10px] font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full uppercase tracking-wider">Gold</span>
-                    <div className="text-xl md:text-2xl font-black mt-2 text-white">₹100</div>
-                    <div className="text-[9px] text-slate-400 mt-1 flex items-center justify-center gap-1">
-                      <Crown className="w-3 h-3 text-amber-400 fill-amber-400/20" /> Unlimited
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleUpgrade("gold")}
-                    disabled={isProcessing}
-                    className="mt-4 w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-extrabold py-1.5 px-3 rounded-lg text-[10px] transition-all disabled:opacity-50"
-                  >
-                    Upgrade
-                  </button>
-                </div>
-              </div>
-              <p className="text-[9px] text-slate-500">
-                Logged in as <span className="text-slate-400 font-semibold">{user?.email || "Guest"}</span>. Plan: <span className="text-red-400 font-semibold capitalize">{userPlan}</span>.
-              </p>
             </div>
           )}
+          <video
+            key={video?.filepath}
+            ref={videoRef}
+            className="w-full h-full object-cover"
+            controls
+            playsInline
+            controlsList="nodownload noremoteplayback"
+            poster={video?.thumbnail || `/placeholder.svg?height=480&width=854`}
+            onPlay={handlePlay}
+            onPause={handlePause}
+            onEnded={handlePause}
+          >
+            <source
+              src={getFileUrl(video?.filepath)}
+              type="video/mp4"
+            />
+            Your browser does not support the video tag.
+          </video>
         </div>
-      )}
+
+        {/* Un-dismissible Limit Modal Overlay */}
+        {showLimitModal && (
+          <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-sm flex flex-col items-center justify-center p-4 z-40 text-center text-white overflow-y-auto">
+            {showMockPayment ? (
+              /* Mock Payment Simulator Box */
+              <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-sm w-full shadow-2xl flex flex-col items-center animate-in fade-in zoom-in duration-250">
+                <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center mb-4 text-amber-500">
+                  <Crown className="w-6 h-6 fill-amber-500" />
+                </div>
+                <h3 className="text-lg font-bold mb-1">Mock Payment Gateway</h3>
+                <p className="text-xs text-slate-400 mb-4">
+                  Simulating secure payment verification.
+                </p>
+                <div className="bg-slate-950/50 border border-slate-800 rounded-xl p-4 w-full text-left space-y-2 text-xs mb-6">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Tier Selected</span>
+                    <span className="font-semibold text-slate-300 capitalize">{mockOrder?.tier}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Amount</span>
+                    <span className="font-semibold text-amber-400">₹{(mockOrder?.amount || 0) / 100}.00</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Order ID</span>
+                    <span className="font-mono text-slate-400 truncate max-w-[180px]">{mockOrder?.id}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={handleMockPaymentSuccess}
+                  disabled={isProcessing}
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all text-sm mb-2 disabled:opacity-50"
+                >
+                  {isProcessing ? "Processing..." : "Simulate Payment Success"}
+                </button>
+                <button
+                  onClick={() => setShowMockPayment(false)}
+                  disabled={isProcessing}
+                  className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 px-4 rounded-xl text-sm font-semibold transition-all"
+                >
+                  Cancel Simulation
+                </button>
+              </div>
+            ) : (
+              /* Pricing Grid Screen */
+              <div className="max-w-2xl w-full flex flex-col items-center animate-in fade-in duration-200">
+                <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mb-3 text-red-500">
+                  <Lock className="w-6 h-6" />
+                </div>
+                <h2 className="text-lg md:text-2xl font-black bg-gradient-to-r from-white via-red-200 to-amber-200 bg-clip-text text-transparent mb-1">
+                  Time Limit Reached for Your Plan
+                </h2>
+                <p className="text-xs md:text-sm text-slate-400 mb-6">
+                  You have watched {Math.floor(cumulativeTime / 60)}m {cumulativeTime % 60}s. Upgrade to a tier to continue watching!
+                </p>
+
+                {/* Grid */}
+                <div className="grid grid-cols-3 gap-3 w-full mb-6 max-w-lg">
+                  {/* Bronze */}
+                  <div className="bg-slate-900/60 border border-amber-800/40 rounded-xl p-3 flex flex-col justify-between items-center transition-all hover:border-amber-700/60 hover:bg-slate-900">
+                    <div className="text-center">
+                      <span className="text-[10px] font-bold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full uppercase tracking-wider">Bronze</span>
+                      <div className="text-xl md:text-2xl font-black mt-2 text-white">₹10</div>
+                      <div className="text-[9px] text-slate-400 mt-1 flex items-center justify-center gap-1">
+                        <Clock className="w-3 h-3 text-slate-500" /> 7 Mins Limit
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleUpgrade("bronze")}
+                      disabled={isProcessing}
+                      className="mt-4 w-full bg-amber-700 hover:bg-amber-600 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] transition-all disabled:opacity-50"
+                    >
+                      Upgrade
+                    </button>
+                  </div>
+
+                  {/* Silver */}
+                  <div className="bg-slate-900/60 border border-slate-700/40 rounded-xl p-3 flex flex-col justify-between items-center relative overflow-hidden transition-all hover:border-slate-600/60 hover:bg-slate-900">
+                    <div className="absolute top-0 right-0 bg-red-600 text-white text-[7px] font-extrabold px-1.5 py-0.5 rounded-bl">BEST</div>
+                    <div className="text-center">
+                      <span className="text-[10px] font-bold text-slate-300 bg-slate-500/10 px-2 py-0.5 rounded-full uppercase tracking-wider">Silver</span>
+                      <div className="text-xl md:text-2xl font-black mt-2 text-white">₹50</div>
+                      <div className="text-[9px] text-slate-400 mt-1 flex items-center justify-center gap-1">
+                        <Clock className="w-3 h-3 text-slate-500" /> 10 Mins Limit
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleUpgrade("silver")}
+                      disabled={isProcessing}
+                      className="mt-4 w-full bg-red-600 hover:bg-red-500 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] transition-all disabled:opacity-50"
+                    >
+                      Upgrade
+                    </button>
+                  </div>
+
+                  {/* Gold */}
+                  <div className="bg-slate-900/60 border border-amber-500/40 rounded-xl p-3 flex flex-col justify-between items-center transition-all hover:border-amber-400/60 hover:bg-slate-900">
+                    <div className="text-center">
+                      <span className="text-[10px] font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full uppercase tracking-wider">Gold</span>
+                      <div className="text-xl md:text-2xl font-black mt-2 text-white">₹100</div>
+                      <div className="text-[9px] text-slate-400 mt-1 flex items-center justify-center gap-1">
+                        <Crown className="w-3 h-3 text-amber-400 fill-amber-400/20" /> Unlimited
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleUpgrade("gold")}
+                      disabled={isProcessing}
+                      className="mt-4 w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-extrabold py-1.5 px-3 rounded-lg text-[10px] transition-all disabled:opacity-50"
+                    >
+                      Upgrade
+                    </button>
+                  </div>
+                </div>
+                <p className="text-[9px] text-slate-500">
+                  Logged in as <span className="text-slate-400 font-semibold">{user?.email || "Guest"}</span>. Plan: <span className="text-red-400 font-semibold capitalize">{userPlan}</span>.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Developer Testing Control Bar */}
+      <div className="bg-slate-950/40 backdrop-blur border border-slate-800/80 rounded-xl p-3.5 flex flex-col gap-3 shadow-xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xs">🛠️</span>
+            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Dev Sandbox Control Bar</h4>
+          </div>
+          <button
+            onClick={() => setShowDevPanel(!showDevPanel)}
+            className="text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded transition-colors"
+          >
+            {showDevPanel ? "Collapse Menu" : "Expand Menu"}
+          </button>
+        </div>
+
+        {showDevPanel && (
+          <div className="space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
+            {/* Live Stats Row */}
+            <div className="flex flex-wrap items-center gap-2 text-xs border-b border-slate-900 pb-2">
+              <span className="text-slate-500">Active Watch Time:</span>
+              <span className="font-mono text-indigo-400 font-bold bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800">
+                {formatTime(cumulativeTime)}
+              </span>
+              <span className="text-slate-500 ml-2">Current Tier Limit:</span>
+              <span className="font-mono text-emerald-400 font-bold bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800">
+                {activeLimitText}
+              </span>
+              <span className="text-slate-500 ml-2">Plan:</span>
+              <span className="font-semibold text-red-400 capitalize bg-red-950/20 px-2 py-0.5 rounded border border-red-950/30">
+                {userPlan}
+              </span>
+            </div>
+
+            {/* Actions Row */}
+            <div className="flex flex-wrap gap-2">
+              {/* Reset Watch Time */}
+              <button
+                onClick={() => {
+                  setCumulativeTime(0);
+                  toast.success("Watch time counter reset to 0:00!");
+                }}
+                className="bg-slate-850 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-[11px] font-semibold py-1.5 px-3 rounded-lg transition-all"
+              >
+                Reset Watch Time
+              </button>
+
+              {/* Fast Forward to Free Plan Limit */}
+              <button
+                onClick={() => {
+                  setCumulativeTime(298);
+                  toast.success("Watch time skipped to 4m 58s! (Free Limit = 5:00)");
+                }}
+                className="bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold py-1.5 px-3 rounded-lg shadow-sm transition-all"
+              >
+                Test Free Limit (Skip to 4m 58s)
+              </button>
+
+              {/* Fast Forward to Silver Plan Limit */}
+              <button
+                onClick={() => {
+                  setCumulativeTime(598);
+                  toast.success("Watch time skipped to 9m 58s! (Silver Limit = 10:00)");
+                }}
+                className="bg-amber-600 hover:bg-amber-500 text-white text-[11px] font-bold py-1.5 px-3 rounded-lg shadow-sm transition-all"
+              >
+                Test Silver Limit (Skip to 9m 58s)
+              </button>
+            </div>
+            
+            <p className="text-[10px] text-slate-500 italic">
+              * Click "Collapse Menu" to hide this panel when presenting the final project to your mentor.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
