@@ -23,11 +23,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 const app = express();
 app.set("trust proxy", true);
-app.use(cors({
-  origin: "*", // Allows any frontend application to access these API endpoints securely
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));
+app.use(cors({ origin: "*" }));
 app.use(express.json({ limit: "30mb", extended: true }));
 app.use(express.urlencoded({ limit: "30mb", extended: true }));
 app.use("/uploads", (req, res, next) => {
