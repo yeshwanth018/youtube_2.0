@@ -12,6 +12,7 @@ interface VideoPlayerProps {
     _id: string;
     videotitle: string;
     filepath: string;
+    thumbnail?: string;
   };
   onPlayNext?: () => void;
 }
@@ -27,6 +28,7 @@ export default function VideoPlayer({ video, onPlayNext }: VideoPlayerProps) {
   const [showMockPayment, setShowMockPayment] = useState<boolean>(false);
   const [mockOrder, setMockOrder] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [showDevPanel, setShowDevPanel] = useState<boolean>(true);
 
   // Gesture recognition refs
   const clickCountRef = useRef<number>(0);
@@ -52,6 +54,8 @@ export default function VideoPlayer({ video, onPlayNext }: VideoPlayerProps) {
 
   const limit = limits[userPlan] || 300;
 
+  const [hasLoadedTime, setHasLoadedTime] = useState<boolean>(false);
+
   // Load cumulative time from localStorage on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -59,15 +63,16 @@ export default function VideoPlayer({ video, onPlayNext }: VideoPlayerProps) {
       if (savedTime) {
         setCumulativeTime(parseInt(savedTime, 10));
       }
+      setHasLoadedTime(true);
     }
   }, []);
 
-  // Update localStorage when cumulativeTime changes
+  // Update localStorage when cumulativeTime changes, only after initial load has finished
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (hasLoadedTime && typeof window !== "undefined") {
       localStorage.setItem("yourtube_watch_time", cumulativeTime.toString());
     }
-  }, [cumulativeTime]);
+  }, [cumulativeTime, hasLoadedTime]);
 
   // Dynamically load Razorpay checkout script
   useEffect(() => {
@@ -370,97 +375,61 @@ export default function VideoPlayer({ video, onPlayNext }: VideoPlayerProps) {
     []
   );
 
+  // Format watch time helper
+  const formatTime = (secs: number) => {
+    const mins = Math.floor(secs / 60);
+    const remainingSecs = secs % 60;
+    return `${mins.toString().padStart(2, "0")}m ${remainingSecs.toString().padStart(2, "0")}s`;
+  };
+
+  const activeLimitText = limit === Infinity ? "Unlimited" : formatTime(limit);
+
   return (
-    <div className="relative w-full bg-black rounded-lg overflow-hidden h-48 lg:h-[360px] lg:max-w-3xl">
-      {/* Video wrapper with gesture overlay */}
-      <div className="relative w-full h-full">
-        {/* Professional visual gesture overlay with distinct hover zones */}
-        <div
-          className="absolute top-0 left-0 w-full z-10 flex select-none"
-          style={{ height: "85%" }}
-          onClick={handleGestureClick}
-        >
-          {/* Left Zone - Double-tap to Rewind */}
-          <div className="w-[30%] h-full flex items-center justify-center group/left hover:bg-white/[0.02] active:bg-white/[0.04] transition-all duration-300 relative border-r border-white/[0.01]">
-            <div className="opacity-0 group-hover/left:opacity-40 transition-opacity duration-300 pointer-events-none bg-black/50 backdrop-blur-sm rounded-full p-2.5 flex flex-col items-center gap-0.5 shadow-lg border border-white/5">
-              <Rewind className="w-4 h-4 text-white" />
-              <span className="text-[8px] text-white/90 font-bold uppercase tracking-wider">Rewind</span>
-            </div>
-          </div>
-
-          {/* Center Zone - Tap to Play/Pause, Double-tap for Fullscreen */}
-          <div className="w-[40%] h-full flex items-center justify-center group/center hover:bg-white/[0.02] active:bg-white/[0.04] transition-all duration-300 relative">
-            <div className="opacity-0 group-hover/center:opacity-40 transition-opacity duration-300 pointer-events-none bg-black/50 backdrop-blur-sm rounded-full p-2.5 flex flex-col items-center gap-0.5 shadow-lg border border-white/5">
-              <Play className="w-4 h-4 text-white fill-white" />
-              <span className="text-[8px] text-white/90 font-bold uppercase tracking-wider">Play/Pause</span>
-            </div>
-          </div>
-
-          {/* Right Zone - Double-tap to Forward */}
-          <div className="w-[30%] h-full flex items-center justify-center group/right hover:bg-white/[0.02] active:bg-white/[0.04] transition-all duration-300 relative border-l border-white/[0.01]">
-            <div className="opacity-0 group-hover/right:opacity-40 transition-opacity duration-300 pointer-events-none bg-black/50 backdrop-blur-sm rounded-full p-2.5 flex flex-col items-center gap-0.5 shadow-lg border border-white/5">
-              <FastForward className="w-4 h-4 text-white" />
-              <span className="text-[8px] text-white/90 font-bold uppercase tracking-wider">Forward</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Gesture visual feedback overlay */}
-        {gestureFeedback && (
+    <div className="flex flex-col gap-4 w-full lg:max-w-3xl">
+      <div className="relative w-full bg-black rounded-lg overflow-hidden h-48 lg:h-[360px]">
+        {/* Video wrapper with gesture overlay */}
+        <div className="relative w-full h-full">
+          {/* Professional visual gesture overlay with distinct hover zones */}
           <div
-            className={`absolute top-0 flex items-center justify-center pointer-events-none z-20 ${gestureFeedback.position === "left"
-                ? "left-0 w-[30%]"
-                : gestureFeedback.position === "right"
+            className="absolute top-0 left-0 w-full z-10 flex select-none"
+            style={{ height: "85%" }}
+            onClick={handleGestureClick}
+          >
+            {/* Left Zone - Double-tap to Rewind */}
+            <div className="w-[30%] h-full flex items-center justify-center group/left hover:bg-white/[0.02] active:bg-white/[0.04] transition-all duration-300 relative border-r border-white/[0.01]">
+              <div className="opacity-0 group-hover/left:opacity-40 transition-opacity duration-300 pointer-events-none bg-black/50 backdrop-blur-sm rounded-full p-2.5 flex flex-col items-center gap-0.5 shadow-lg border border-white/5">
+                <Rewind className="w-4 h-4 text-white" />
+                <span className="text-[8px] text-white/90 font-bold uppercase tracking-wider">Rewind</span>
+              </div>
+            </div>
+
+            {/* Center Zone - Tap to Play/Pause, Double-tap for Fullscreen */}
+            <div className="w-[40%] h-full flex items-center justify-center group/center hover:bg-white/[0.02] active:bg-white/[0.04] transition-all duration-300 relative">
+              <div className="opacity-0 group-hover/center:opacity-40 transition-opacity duration-300 pointer-events-none bg-black/50 backdrop-blur-sm rounded-full p-2.5 flex flex-col items-center gap-0.5 shadow-lg border border-white/5">
+                <Play className="w-4 h-4 text-white fill-white" />
+                <span className="text-[8px] text-white/90 font-bold uppercase tracking-wider">Play/Pause</span>
+              </div>
+            </div>
+
+            {/* Right Zone - Double-tap to Forward */}
+            <div className="w-[30%] h-full flex items-center justify-center group/right hover:bg-white/[0.02] active:bg-white/[0.04] transition-all duration-300 relative border-l border-white/[0.01]">
+              <div className="opacity-0 group-hover/right:opacity-40 transition-opacity duration-300 pointer-events-none bg-black/50 backdrop-blur-sm rounded-full p-2.5 flex flex-col items-center gap-0.5 shadow-lg border border-white/5">
+                <FastForward className="w-4 h-4 text-white" />
+                <span className="text-[8px] text-white/90 font-bold uppercase tracking-wider">Forward</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Gesture visual feedback overlay */}
+          {gestureFeedback && (
+            <div
+              className={`absolute top-0 flex items-center justify-center pointer-events-none z-20 ${
+                gestureFeedback.position === "left"
+                  ? "left-0 w-[30%]"
+                  : gestureFeedback.position === "right"
                   ? "right-0 w-[30%]"
                   : "left-[30%] w-[40%]"
               }`}
-            style={{ height: "85%" }}
-          >
-            <div className="bg-black/75 backdrop-blur-md rounded-full p-5 flex flex-col items-center gap-1.5 animate-in fade-in zoom-in-95 duration-200 border border-white/10 shadow-2xl">
-              {gestureFeedback.type === "play" && (
-                <Play className="w-8 h-8 text-white fill-white" />
-              )}
-              {gestureFeedback.type === "pause" && (
-                <Pause className="w-8 h-8 text-white fill-white" />
-              )}
-              {gestureFeedback.type === "rewind" && (
-                <Rewind className="w-8 h-8 text-white fill-white" />
-              )}
-              {gestureFeedback.type === "forward" && (
-                <FastForward className="w-8 h-8 text-white fill-white" />
-              )}
-              {gestureFeedback.type === "nextVideo" && (
-                <SkipForward className="w-8 h-8 text-white fill-white" />
-              )}
-              {gestureFeedback.type === "comments" && (
-                <MessageCircle className="w-8 h-8 text-white fill-white" />
-              )}
-              {gestureFeedback.type === "closeTab" && (
-                <X className="w-8 h-8 text-white" />
-              )}
-              {gestureFeedback.type === "fullscreen" && (
-                <Play className="w-8 h-8 text-white fill-white" />
-              )}
-              {gestureFeedback.text && (
-                <span className="text-white text-xs font-bold tracking-wider">
-                  {gestureFeedback.text}
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-        <video
-          key={video?.filepath}
-          ref={videoRef}
-          className="w-full h-full object-cover"
-          controls
-          playsInline
-          controlsList="nodownload noremoteplayback"
-          poster={video?.thumbnail || `/placeholder.svg?height=480&width=854`}
-          onPlay={handlePlay}
-          onPause={handlePause}
-          onEnded={handlePause}
-        >
               style={{ height: "85%" }}
             >
               <div className="bg-black/75 backdrop-blur-md rounded-full p-5 flex flex-col items-center gap-1.5 animate-in fade-in zoom-in-95 duration-200 border border-white/10 shadow-2xl">
