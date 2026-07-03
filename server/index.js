@@ -75,9 +75,9 @@ app.listen(PORT, () => {
   console.log(`server running on port ${PORT}`);
 });
 
-const DBURL = process.env.DB_URL;
+const dbURI = process.env.MONGODB_URI || process.env.DB_URL || 'mongodb://127.0.0.1:27017/youtube_clone';
 mongoose
-  .connect(DBURL)
+  .connect(dbURI)
   .then(() => {
     console.log("Mongodb connected");
   })
