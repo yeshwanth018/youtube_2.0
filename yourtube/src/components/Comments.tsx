@@ -276,6 +276,8 @@ const Comments = ({ videoId }: any) => {
           </Avatar>
           <div className="flex-1 space-y-2">
             <Textarea
+              id="comment-input"
+              name="comment-input"
               placeholder="Add a comment..."
               value={newComment}
               onChange={(e: any) => setNewComment(e.target.value)}
@@ -330,6 +332,8 @@ const Comments = ({ videoId }: any) => {
                 {editingCommentId === comment._id ? (
                   <div className="space-y-2">
                     <Textarea
+                      id={`edit-comment-${comment._id}`}
+                      name="edit-comment"
                       value={editText}
                       onChange={(e) => setEditText(e.target.value)}
                     />
