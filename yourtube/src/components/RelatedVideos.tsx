@@ -9,6 +9,7 @@ interface RelatedVideosProps {
     videochanel: string;
     views: number;
     createdAt: string;
+    thumbnail?: string;
   }>;
 }
 const vid = "/video/vdo.mp4";
@@ -21,10 +22,11 @@ export default function RelatedVideos({ videos }: RelatedVideosProps) {
           href={`/watch/${video._id}`}
           className="flex gap-3 items-start"
         >
-          <div className="w-28 aspect-video bg-gray-100 rounded overflow-hidden flex-shrink-0">
-            <video
-              src={vid}
-              className="w-full h-full object-cover"
+          <div className="w-28 aspect-video bg-slate-900 border border-slate-800 rounded overflow-hidden flex-shrink-0 relative">
+            <img
+              src={video.thumbnail || "/placeholder.svg?height=90&width=160"}
+              alt={video.videotitle}
+              className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
             />
           </div>
           <div className="flex-1 min-w-0">
