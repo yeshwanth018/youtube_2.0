@@ -8,6 +8,7 @@ import {
   User,
   Download,
   Crown,
+  Video,
 } from "lucide-react";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
@@ -15,6 +16,7 @@ import { useRouter } from "next/router";
 import { Button } from "./ui/button";
 import Channeldialogue from "./channeldialogue";
 import { useUser } from "@/lib/AuthContext";
+import { useSidebar } from "@/lib/SidebarContext";
 import axiosInstance from "@/lib/axiosinstance";
 import { toast } from "sonner";
 import {
@@ -27,6 +29,7 @@ import {
 
 const Sidebar = () => {
   const { user, login } = useUser();
+  const { isOpen, close } = useSidebar();
   const router = useRouter();
 
   const [isdialogeopen, setisdialogeopen] = useState(false);
@@ -36,6 +39,26 @@ const Sidebar = () => {
   const [showMockPaymentModal, setShowMockPaymentModal] = useState(false);
   const [mockOrder, setMockOrder] = useState<any>(null);
   const [isProcessingMockPayment, setIsProcessingMockPayment] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    if (isMobile) close();
+  }, [router.pathname]);
+
+  // Helper: close sidebar on mobile when a nav link is clicked
+  const handleNavClick = (path: string) => {
+    setActiveLink(path);
+    if (isMobile) close();
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -164,9 +187,22 @@ const Sidebar = () => {
       : "w-full justify-start bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground transition-colors";
   };
 
+  // Build responsive classNames
+  const asideClasses = isMobile
+    ? `sidebar-mobile bg-card text-card-foreground border-r border-border p-2 transition-colors duration-300 ${isOpen ? "open" : ""}`
+    : "w-64 bg-card text-card-foreground border-r border-border min-h-screen p-2 transition-colors duration-300 hidden md:block";
+
   return (
-    <aside className="w-64 bg-card text-card-foreground border-r border-border min-h-screen p-2 transition-colors duration-300">
-      <nav className="space-y-1">
+    <>
+      {/* Mobile backdrop overlay */}
+      {isMobile && (
+        <div
+          className={`sidebar-backdrop ${isOpen ? "open" : ""}`}
+          onClick={close}
+        />
+      )}
+      <aside className={asideClasses}>
+        <nav className="space-y-1">
         <Link href="/">
           <Button
             variant="ghost"
@@ -249,6 +285,16 @@ const Sidebar = () => {
               >
                 <Download className="w-5 h-5 mr-3" />
                 Downloads
+              </Button>
+            </Link>
+            <Link href="/call">
+              <Button
+                variant="ghost"
+                className={getButtonClass("/call")}
+                onClick={() => setActiveLink("/call")}
+              >
+                <Video className="w-5 h-5 mr-3" />
+                Video Call
               </Button>
             </Link>
             {user?.channelname ? (
@@ -445,7 +491,8 @@ const Sidebar = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </aside>
+      </aside>
+    </>
   );
 };
 
