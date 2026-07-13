@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import DownloadLog from "../Modals/DownloadLog.js";
+import downloadModel from "../Modals/download.js";
 import users from "../Modals/Auth.js";
 import video from "../Modals/video.js";
 import path from "path";
@@ -56,8 +57,13 @@ export const checkAndLogDownload = async (req, res) => {
       }
     }
 
-    // Log the download
+    // Log the download in both collections
     await DownloadLog.create({ userId, videoId });
+    await downloadModel.findOneAndUpdate(
+      { viewer: userId, videoid: videoId },
+      { viewer: userId, videoid: videoId },
+      { upsert: true, new: true }
+    );
 
     return res.status(200).json({
       download: true,
