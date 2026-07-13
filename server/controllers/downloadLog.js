@@ -3,6 +3,7 @@ import DownloadLog from "../Modals/DownloadLog.js";
 import users from "../Modals/Auth.js";
 import video from "../Modals/video.js";
 import path from "path";
+import fs from "fs";
 
 export const checkAndLogDownload = async (req, res) => {
   const { id: videoId } = req.params;
@@ -93,9 +94,15 @@ export const downloadFile = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    // Serve the file directly for download
+    // Serve the file directly for download if it exists locally
     const absolutePath = path.resolve(targetVideo.filepath);
-    return res.download(absolutePath, targetVideo.filename);
+    if (fs.existsSync(absolutePath)) {
+      return res.download(absolutePath, targetVideo.filename);
+    } else {
+      // Fallback: Redirect to the seed backend where permanent uploads are stored
+      const filename = path.basename(targetVideo.filepath);
+      return res.redirect(`https://you-tube2-0-six-backend.onrender.com/uploads/${filename}`);
+    }
   } catch (error) {
     console.error("downloadFile error:", error);
     return res.status(500).json({ message: "Something went wrong." });
