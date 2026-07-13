@@ -52,6 +52,8 @@ const VideoInfo = ({ video }: any) => {
         
         const link = document.createElement("a");
         link.href = downloadUrl;
+        link.target = "_blank";
+        link.setAttribute("download", video.filename || `${video.videotitle || "video"}.mp4`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

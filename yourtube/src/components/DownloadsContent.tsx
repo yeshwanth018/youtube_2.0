@@ -47,6 +47,8 @@ export default function DownloadsContent() {
     const downloadUrl = `${backendUrl}/api/videos/${video.videoid._id}/download-file?userId=${user?._id}`;
     const link = document.createElement("a");
     link.href = downloadUrl;
+    link.target = "_blank";
+    link.setAttribute("download", video.videoid.filename || `${video.videoid.videotitle || "video"}.mp4`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
