@@ -100,13 +100,20 @@ export const downloadFile = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    // Serve the file directly for download if it exists locally
-    const absolutePath = path.resolve(targetVideo.filepath);
+    const filepath = targetVideo.filepath || "";
+
+    // 1. If the filepath is already a remote URL, redirect directly to it
+    if (filepath.startsWith("http://") || filepath.startsWith("https://")) {
+      return res.redirect(filepath);
+    }
+
+    // 2. Serve the file directly for download if it exists locally
+    const absolutePath = path.resolve(filepath);
     if (fs.existsSync(absolutePath)) {
       return res.download(absolutePath, targetVideo.filename);
     } else {
       // Fallback: Redirect to the seed backend where permanent uploads are stored
-      const filename = path.basename(targetVideo.filepath);
+      const filename = path.basename(filepath);
       return res.redirect(`https://you-tube2-0-six-backend.onrender.com/uploads/${filename}`);
     }
   } catch (error) {
