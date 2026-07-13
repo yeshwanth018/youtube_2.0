@@ -56,13 +56,16 @@ const VideoInfo = ({ video }: any) => {
         const downloadUrl = `${backendUrl}/api/videos/${video._id}/download-file?userId=${user?._id}`;
         console.log("[Download] Triggering file stream from:", downloadUrl);
         
-        const link = document.createElement("a");
-        link.href = downloadUrl;
-        link.target = "_blank";
-        link.setAttribute("download", video.filename || `${video.videotitle || "video"}.mp4`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Use a hidden iframe to bypass popup blockers
+        const iframe = document.createElement("iframe");
+        iframe.style.display = "none";
+        iframe.src = downloadUrl;
+        document.body.appendChild(iframe);
+        
+        // Clean up the iframe after 10 seconds
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 10000);
       }
     } catch (error: any) {
       console.error("[Download] Request failed:", error);

@@ -41,17 +41,17 @@ export default function DownloadsContent() {
   };
 
   const handleRedownload = async (video: any) => {
-    if (!video || !video.videoid) return;
-    toast.success(`Redownloading "${video.videoid.videotitle || "video"}"...`);
+    if (!video || !video._id) return;
+    toast.success(`Redownloading "${video.videotitle || "video"}"...`);
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
-    const downloadUrl = `${backendUrl}/api/videos/${video.videoid._id}/download-file?userId=${user?._id}`;
-    const link = document.createElement("a");
-    link.href = downloadUrl;
-    link.target = "_blank";
-    link.setAttribute("download", video.videoid.filename || `${video.videoid.videotitle || "video"}.mp4`);
+    const downloadUrl = `${backendUrl}/api/videos/${video._id}/download-file?userId=${user?._id}`;
+    const link = document.createElement("iframe");
+    link.style.display = "none";
+    link.src = downloadUrl;
     document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    setTimeout(() => {
+      document.body.removeChild(link);
+    }, 10000);
   };
 
 
