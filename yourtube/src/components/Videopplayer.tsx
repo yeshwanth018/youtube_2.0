@@ -28,7 +28,6 @@ export default function VideoPlayer({ video, onPlayNext }: VideoPlayerProps) {
   const [showMockPayment, setShowMockPayment] = useState<boolean>(false);
   const [mockOrder, setMockOrder] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [showDevPanel, setShowDevPanel] = useState<boolean>(true);
 
   // Gesture recognition refs
   const clickCountRef = useRef<number>(0);
@@ -602,82 +601,6 @@ export default function VideoPlayer({ video, onPlayNext }: VideoPlayerProps) {
                 </p>
               </div>
             )}
-          </div>
-        )}
-      </div>
-
-      {/* Developer Testing Control Bar */}
-      <div className="bg-slate-950/40 backdrop-blur border border-slate-800/80 rounded-xl p-3.5 flex flex-col gap-3 shadow-xl">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xs">🛠️</span>
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Dev Sandbox Control Bar</h4>
-          </div>
-          <button
-            onClick={() => setShowDevPanel(!showDevPanel)}
-            className="text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded transition-colors"
-          >
-            {showDevPanel ? "Collapse Menu" : "Expand Menu"}
-          </button>
-        </div>
-
-        {showDevPanel && (
-          <div className="space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
-            {/* Live Stats Row */}
-            <div className="flex flex-wrap items-center gap-2 text-xs border-b border-slate-900 pb-2">
-              <span className="text-slate-500">Active Watch Time:</span>
-              <span className="font-mono text-indigo-400 font-bold bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800">
-                {formatTime(cumulativeTime)}
-              </span>
-              <span className="text-slate-500 ml-2">Current Tier Limit:</span>
-              <span className="font-mono text-emerald-400 font-bold bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800">
-                {activeLimitText}
-              </span>
-              <span className="text-slate-500 ml-2">Plan:</span>
-              <span className="font-semibold text-red-400 capitalize bg-red-950/20 px-2 py-0.5 rounded border border-red-950/30">
-                {userPlan}
-              </span>
-            </div>
-
-            {/* Actions Row */}
-            <div className="flex flex-wrap gap-2">
-              {/* Reset Watch Time */}
-              <button
-                onClick={() => {
-                  setCumulativeTime(0);
-                  toast.success("Watch time counter reset to 0:00!");
-                }}
-                className="bg-slate-850 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-[11px] font-semibold py-1.5 px-3 rounded-lg transition-all"
-              >
-                Reset Watch Time
-              </button>
-
-              {/* Fast Forward to Free Plan Limit */}
-              <button
-                onClick={() => {
-                  setCumulativeTime(298);
-                  toast.success("Watch time skipped to 4m 58s! (Free Limit = 5:00)");
-                }}
-                className="bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold py-1.5 px-3 rounded-lg shadow-sm transition-all"
-              >
-                Test Free Limit (Skip to 4m 58s)
-              </button>
-
-              {/* Fast Forward to Silver Plan Limit */}
-              <button
-                onClick={() => {
-                  setCumulativeTime(598);
-                  toast.success("Watch time skipped to 9m 58s! (Silver Limit = 10:00)");
-                }}
-                className="bg-amber-600 hover:bg-amber-500 text-white text-[11px] font-bold py-1.5 px-3 rounded-lg shadow-sm transition-all"
-              >
-                Test Silver Limit (Skip to 9m 58s)
-              </button>
-            </div>
-            
-            <p className="text-[10px] text-slate-500 italic">
-              * Click "Collapse Menu" to hide this panel when presenting the final project to your mentor.
-            </p>
           </div>
         )}
       </div>
