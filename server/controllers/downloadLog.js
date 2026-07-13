@@ -5,6 +5,8 @@ import users from "../Modals/Auth.js";
 import video from "../Modals/video.js";
 import path from "path";
 import fs from "fs";
+import https from "https";
+import http from "http";
 
 export const checkAndLogDownload = async (req, res) => {
   const { id: videoId } = req.params;
@@ -102,9 +104,27 @@ export const downloadFile = async (req, res) => {
 
     const filepath = targetVideo.filepath || "";
 
-    // 1. If the filepath is already a remote URL, redirect directly to it
+    // 1. If the filepath is already a remote URL, stream/pipe it directly to force download
     if (filepath.startsWith("http://") || filepath.startsWith("https://")) {
-      return res.redirect(filepath);
+      res.setHeader("Content-Disposition", `attachment; filename="${targetVideo.filename || 'video.mp4'}"`);
+      res.setHeader("Content-Type", targetVideo.filetype || "video/mp4");
+
+      const client = filepath.startsWith("https://") ? https : http;
+      client.get(filepath, (remoteResponse) => {
+        if (remoteResponse.statusCode >= 300 && remoteResponse.statusCode < 400 && remoteResponse.headers.location) {
+          // Handle one level of redirects (e.g. http to https)
+          const redirectClient = remoteResponse.headers.location.startsWith("https://") ? https : http;
+          redirectClient.get(remoteResponse.headers.location, (redirectResponse) => {
+            redirectResponse.pipe(res);
+          });
+        } else {
+          remoteResponse.pipe(res);
+        }
+      }).on("error", (err) => {
+        console.error("Error streaming remote video:", err);
+        return res.status(500).json({ message: "Error downloading remote video file." });
+      });
+      return;
     }
 
     // 2. Serve the file directly for download if it exists locally
