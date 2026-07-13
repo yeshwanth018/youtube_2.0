@@ -66,10 +66,10 @@ export default function DownloadsContent() {
 
   if (!user) {
     return (
-      <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-        <Download className="w-16 h-16 mx-auto text-gray-400 mb-4 animate-bounce" />
-        <h2 className="text-xl font-semibold mb-2">Save videos offline</h2>
-        <p className="text-gray-600 mb-4">
+      <div className="text-center py-12 bg-slate-900/40 rounded-xl border border-dashed border-slate-800">
+        <Download className="w-16 h-16 mx-auto text-slate-500 mb-4 animate-bounce" />
+        <h2 className="text-xl font-semibold mb-2 text-white">Save videos offline</h2>
+        <p className="text-slate-400 mb-4 text-sm">
           Sign in to access and manage your downloaded videos.
         </p>
       </div>
@@ -80,17 +80,17 @@ export default function DownloadsContent() {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-        <span className="ml-3 text-gray-600">Loading downloads...</span>
+        <span className="ml-3 text-slate-400">Loading downloads...</span>
       </div>
     );
   }
 
   if (downloads.length === 0) {
     return (
-      <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-        <Download className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-        <h2 className="text-xl font-semibold mb-2">No videos downloaded</h2>
-        <p className="text-gray-600">
+      <div className="text-center py-12 bg-slate-900/40 rounded-xl border border-dashed border-slate-800">
+        <Download className="w-16 h-16 mx-auto text-slate-500 mb-4" />
+        <h2 className="text-xl font-semibold mb-2 text-white">No videos downloaded</h2>
+        <p className="text-slate-400 text-sm">
           Videos you download will appear here. Go to the watch page of any video to download it!
         </p>
       </div>
@@ -102,18 +102,18 @@ export default function DownloadsContent() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100">
+      <div className="flex justify-between items-center bg-slate-900/60 p-4 rounded-xl border border-slate-800/40">
         <div>
-          <p className="font-semibold text-lg">{downloads.length} videos downloaded</p>
+          <p className="font-semibold text-lg text-white">{downloads.length} videos downloaded</p>
           {user?.isPremium ? (
-            <p className="text-xs text-amber-600 font-medium">Premium Member: Unlimited Downloads Active ✨</p>
+            <p className="text-xs text-amber-500 font-medium">Premium Member: Unlimited Downloads Active ✨</p>
           ) : (
-            <p className="text-xs text-gray-500">Free Account: Daily Limit of 1 Download (Upgrade for unlimited!)</p>
+            <p className="text-xs text-slate-400">Free Account: Daily Limit of 1 Download (Upgrade for unlimited!)</p>
           )}
         </div>
         {firstVideoId && (
           <Link href={`/watch/${firstVideoId}`}>
-            <Button className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white rounded-full px-5">
+            <Button className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white rounded-full px-5 font-semibold">
               <Play className="w-4 h-4 fill-white" />
               Play all
             </Button>
@@ -125,20 +125,20 @@ export default function DownloadsContent() {
         {downloads.map((item) => {
           if (!item.videoid) {
             return (
-              <div key={item._id} className="flex gap-4 p-3 bg-red-50 text-red-700 rounded-lg items-center text-sm border border-red-100">
+              <div key={item._id} className="flex gap-4 p-3 bg-red-950/20 text-red-400 rounded-lg items-center text-sm border border-red-900/30">
                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 <span>This video is no longer available or was deleted from the platform.</span>
               </div>
             );
           }
           return (
-            <div key={item._id} className="flex flex-col sm:flex-row gap-4 p-3 hover:bg-slate-50 rounded-xl border border-transparent hover:border-slate-100 transition-all duration-200 group relative">
+            <div key={item._id} className="flex flex-col sm:flex-row gap-4 p-3 hover:bg-slate-800/40 rounded-xl border border-transparent hover:border-slate-800/50 transition-all duration-200 group relative">
               <Link href={`/watch/${item.videoid._id}`} className="flex-shrink-0">
-                <div className="relative w-full sm:w-48 aspect-video bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-                  <video
-                    src={getFileUrl(item.videoid.filepath)}
+                <div className="relative w-full sm:w-48 aspect-video bg-slate-950 rounded-lg overflow-hidden border border-slate-800">
+                  <img
+                    src={item.videoid.thumbnail || "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=60"}
+                    alt={item.videoid.videotitle}
                     className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-200"
-                    muted
                   />
                   <div className="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <Play className="w-8 h-8 text-white fill-white drop-shadow-md" />
@@ -149,20 +149,20 @@ export default function DownloadsContent() {
               <div className="flex-1 min-w-0 flex flex-col justify-between">
                 <div>
                   <Link href={`/watch/${item.videoid._id}`}>
-                    <h3 className="font-semibold text-base line-clamp-2 text-zinc-900 group-hover:text-red-600 mb-1 transition-colors leading-snug">
+                    <h3 className="font-semibold text-base line-clamp-2 text-white group-hover:text-red-500 mb-1 transition-colors leading-snug">
                       {item.videoid.videotitle}
                     </h3>
                   </Link>
-                  <p className="text-sm text-gray-600 font-medium">
+                  <p className="text-sm text-slate-400 font-medium">
                     {item.videoid.videochanel}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-slate-500 mt-1">
                     {item.videoid.views.toLocaleString()} views •{" "}
                     {formatDistanceToNow(new Date(item.videoid.createdAt))} ago
                   </p>
                 </div>
                 <div className="mt-3 flex items-center justify-between">
-                  <span className="text-xs text-gray-400 font-medium">
+                  <span className="text-xs text-slate-500 font-medium">
                     Downloaded {formatDistanceToNow(new Date(item.downloadedon || item.createdAt))} ago
                   </span>
                   <div className="flex items-center gap-2">
@@ -170,7 +170,7 @@ export default function DownloadsContent() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleRedownload(item.videoid)}
-                      className="flex items-center gap-1.5 rounded-full border-gray-300 hover:bg-gray-100 text-xs px-3"
+                      className="flex items-center gap-1.5 rounded-full border-slate-700 hover:bg-slate-800 text-xs px-3 text-slate-300 hover:text-white"
                     >
                       <Download className="w-3.5 h-3.5" />
                       Redownload
