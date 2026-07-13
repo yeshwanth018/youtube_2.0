@@ -38,17 +38,23 @@ const VideoInfo = ({ video }: any) => {
   const [isProcessingMockPayment, setIsProcessingMockPayment] = useState(false);
 
   const handleDownload = async () => {
+    console.log("[Download] Button clicked. User:", user, "Video:", video);
     if (!user) {
+      alert("Please sign in to download videos.");
       toast.error("Please sign in to download videos.");
       return;
     }
     setIsDownloading(true);
     try {
+      console.log(`[Download] Sending authorization request for video: ${video._id}`);
       const res = await axiosInstance.get(`/api/videos/${video._id}/download?userId=${user?._id}`);
+      console.log("[Download] Authorization response:", res.data);
+
       if (res.data.download) {
         toast.success("Download starting...");
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
         const downloadUrl = `${backendUrl}/api/videos/${video._id}/download-file?userId=${user?._id}`;
+        console.log("[Download] Triggering file stream from:", downloadUrl);
         
         const link = document.createElement("a");
         link.href = downloadUrl;
@@ -59,13 +65,16 @@ const VideoInfo = ({ video }: any) => {
         document.body.removeChild(link);
       }
     } catch (error: any) {
-      console.error("Download failed:", error);
+      console.error("[Download] Request failed:", error);
+      const errMsg = error.response?.data?.message || "Failed to download video.";
+      
       if (error.response?.status === 403 && error.response?.data?.limitReached) {
+        alert("Daily download limit reached! Upgrade to Premium for unlimited downloads.");
         toast.warning("Daily download limit reached!", {
           description: <span style={{ color: "#4b5563" }}>Upgrade to Premium for unlimited downloads.</span>,
           style: {
-            backgroundColor: "#fffbeb", // light amber
-            color: "#b45309",          // dark amber text for title
+            backgroundColor: "#fffbeb",
+            color: "#b45309",
             border: "1px solid #fde68a",
           },
           action: {
@@ -74,7 +83,8 @@ const VideoInfo = ({ video }: any) => {
           },
         });
       } else {
-        toast.error(error.response?.data?.message || "Failed to download video.");
+        alert(`Download Error: ${errMsg}`);
+        toast.error(errMsg);
       }
     } finally {
       setIsDownloading(false);
