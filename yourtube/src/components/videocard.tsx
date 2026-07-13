@@ -1,4 +1,4 @@
-"use clinet";
+"use client";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback } from "./ui/avatar";

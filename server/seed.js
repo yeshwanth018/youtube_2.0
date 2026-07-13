@@ -4,7 +4,7 @@ import video from "./Modals/video.js";
 
 dotenv.config();
 
-const DBURL = process.env.DB_URL;
+const DBURL = process.env.MONGODB_URI || process.env.DB_URL || "mongodb://127.0.0.1:27017/youtube_clone";
 
 const sampleVideos = [
   {

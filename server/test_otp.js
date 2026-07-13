@@ -17,7 +17,7 @@ async function runTest() {
   const email = "developer@example.com";
   
   // 1. Connect to MongoDB to read the generated OTP directly
-  const DBURL = process.env.DB_URL || "mongodb://127.0.0.1:27017/youtube_clone";
+  const DBURL = process.env.MONGODB_URI || process.env.DB_URL || "mongodb://127.0.0.1:27017/youtube_clone";
   await mongoose.connect(DBURL);
   
   try {

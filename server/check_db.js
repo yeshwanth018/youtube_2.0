@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
-const DBURL = process.env.DB_URL || "mongodb://127.0.0.1:27017/youtube_clone";
+const DBURL = process.env.MONGODB_URI || process.env.DB_URL || "mongodb://127.0.0.1:27017/youtube_clone";
 
 const videochema = mongoose.Schema({
   videotitle: { type: String },

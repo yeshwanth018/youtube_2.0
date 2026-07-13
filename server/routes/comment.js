@@ -3,8 +3,8 @@ import { deletecomment, getallcomment, postcomment, editcomment, getRemoteCommen
 
 
 const routes = express.Router();
-routes.get("/:videoid", getallcomment);
 routes.get("/remote/:videoid", getRemoteComments);
+routes.get("/:videoid", getallcomment);
 routes.post("/postcomment", postcomment);
 routes.delete("/deletecomment/:id", deletecomment);
 routes.post("/editcomment/:id", editcomment);
