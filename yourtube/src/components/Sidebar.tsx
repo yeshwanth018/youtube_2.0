@@ -28,7 +28,7 @@ import {
 } from "./ui/dialog";
 
 const Sidebar = () => {
-  const { user, login } = useUser();
+  const { user, login, handlegooglesignin } = useUser();
   const { isOpen, close } = useSidebar();
   const router = useRouter();
 
@@ -229,7 +229,7 @@ const Sidebar = () => {
               variant="secondary"
               size="sm"
               className="w-full"
-              onClick={() => setisdialogeopen(true)}
+              onClick={handlegooglesignin}
             >
               Sign In
             </Button>
