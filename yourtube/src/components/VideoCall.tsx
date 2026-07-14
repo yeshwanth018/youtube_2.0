@@ -139,7 +139,7 @@ export default function VideoCall({ roomId, targetUserId }: VideoCallProps) {
 
   // ── 2. Create the RTCPeerConnection ──────────────────────────────────────
   const createPeerConnection = useCallback(
-    (localStream: MediaStream | null) => {
+    (localStream: MediaStream | null, isInitiator = false) => {
       const pc = new RTCPeerConnection(ICE_SERVERS);
 
       // Add local tracks (audio + video) if they exist
@@ -149,23 +149,26 @@ export default function VideoCall({ roomId, targetUserId }: VideoCallProps) {
         });
       }
 
-      // If we don't have a local video track, add a video transceiver so we can send video (like screen share) later without renegotiation
-      const hasVideoTrack = localStream && localStream.getVideoTracks().length > 0;
-      if (!hasVideoTrack) {
-        try {
-          pc.addTransceiver("video", { direction: "sendrecv" });
-        } catch (e) {
-          console.warn("[VideoCall] Failed to add video transceiver:", e);
+      // If we are initiating the call and don't have a local video track,
+      // add a video transceiver so we can send video (like screen share) later without renegotiation
+      if (isInitiator) {
+        const hasVideoTrack = localStream && localStream.getVideoTracks().length > 0;
+        if (!hasVideoTrack) {
+          try {
+            pc.addTransceiver("video", { direction: "sendrecv" });
+          } catch (e) {
+            console.warn("[VideoCall] Failed to add video transceiver:", e);
+          }
         }
-      }
 
-      // If we don't have a local audio track, add an audio transceiver
-      const hasAudioTrack = localStream && localStream.getAudioTracks().length > 0;
-      if (!hasAudioTrack) {
-        try {
-          pc.addTransceiver("audio", { direction: "sendrecv" });
-        } catch (e) {
-          console.warn("[VideoCall] Failed to add audio transceiver:", e);
+        // If we don't have a local audio track, add an audio transceiver
+        const hasAudioTrack = localStream && localStream.getAudioTracks().length > 0;
+        if (!hasAudioTrack) {
+          try {
+            pc.addTransceiver("audio", { direction: "sendrecv" });
+          } catch (e) {
+            console.warn("[VideoCall] Failed to add audio transceiver:", e);
+          }
         }
       }
 
@@ -261,8 +264,13 @@ export default function VideoCall({ roomId, targetUserId }: VideoCallProps) {
       const localStream =
         localStreamRef.current || (await startLocalStream());
 
-      const pc = createPeerConnection(localStream);
+      const pc = createPeerConnection(localStream, false);
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
+
+      // Force direction of all transceivers to sendrecv so both sides can send media
+      pc.getTransceivers().forEach((t) => {
+        t.direction = "sendrecv";
+      });
 
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
@@ -325,7 +333,13 @@ export default function VideoCall({ roomId, targetUserId }: VideoCallProps) {
     const localStream =
       localStreamRef.current || (await startLocalStream());
 
-    const pc = createPeerConnection(localStream);
+    const pc = createPeerConnection(localStream, true);
+
+    // Force direction of all transceivers to sendrecv so both sides can send media
+    pc.getTransceivers().forEach((t) => {
+      t.direction = "sendrecv";
+    });
+
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
 
@@ -416,10 +430,8 @@ export default function VideoCall({ roomId, targetUserId }: VideoCallProps) {
     if (!pc) return;
 
     // Find the video transceiver's sender
-    const videoTransceiver = pc
-      .getTransceivers()
-      .find((t) => t.receiver.track.kind === "video");
-    const videoSender = videoTransceiver?.sender;
+    const videoSender = pc.getSenders().find((s) => s.track && s.track.kind === "video")
+      || pc.getTransceivers().find((t) => t.receiver.track?.kind === "video" || t.sender.track?.kind === "video")?.sender;
 
     if (!videoSender) {
       console.warn("[VideoCall] No video sender found for screen sharing.");
@@ -471,13 +483,12 @@ export default function VideoCall({ roomId, targetUserId }: VideoCallProps) {
       if (cameraTrack) {
         await videoSender.replaceTrack(cameraTrack);
       } else {
-        // If there was no camera track (webcam blocked/missing), remove the screen track sender
-        const pc = peerRef.current;
-        if (pc && videoSender) {
+        // If there was no camera track (webcam blocked/missing), replace with null to stop transmission
+        if (videoSender) {
           try {
-            pc.removeTrack(videoSender);
+            await videoSender.replaceTrack(null);
           } catch (e) {
-            console.warn("[VideoCall] Error removing screen share track:", e);
+            console.warn("[VideoCall] Error clearing screen share track:", e);
           }
         }
       }
