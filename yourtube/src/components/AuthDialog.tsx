@@ -212,9 +212,10 @@ export default function AuthDialog() {
                 <Input
                   id="phone"
                   type="tel"
-                  placeholder="+919876543210"
+                  placeholder="9876543210"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                  maxLength={10}
                   className="bg-slate-900 border-slate-800 text-white placeholder-slate-500 rounded-xl py-6 pl-10 focus:border-red-500 focus:ring-red-500"
                   required
                 />
