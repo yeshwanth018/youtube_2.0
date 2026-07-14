@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 
-export const sendInvoiceEmail = async (user, invoice) => {
-  const { email, name } = user;
+export const generateInvoiceHtml = (user, invoice) => {
+  const { name } = user;
   const { _id: invoiceId, planSelected, amountPaid, paymentId, createdAt } = invoice;
 
   const formattedDate = new Date(createdAt).toLocaleDateString("en-US", {
@@ -12,9 +12,7 @@ export const sendInvoiceEmail = async (user, invoice) => {
     minute: "2-digit",
   });
 
-  const subject = `Your-Tube Subscription Invoice - ${planSelected.toUpperCase()} Plan`;
-
-  const html = `
+  return `
 <!DOCTYPE html>
 <html>
   <head>
@@ -141,6 +139,22 @@ export const sendInvoiceEmail = async (user, invoice) => {
   </body>
 </html>
   `;
+};
+
+export const sendInvoiceEmail = async (user, invoice) => {
+  const { email } = user;
+  const { _id: invoiceId, planSelected, amountPaid, paymentId, createdAt } = invoice;
+
+  const formattedDate = new Date(createdAt).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const subject = `Your-Tube Subscription Invoice - ${planSelected.toUpperCase()} Plan`;
+  const html = generateInvoiceHtml(user, invoice);
 
   const host = process.env.SMTP_HOST;
   const port = process.env.SMTP_PORT;

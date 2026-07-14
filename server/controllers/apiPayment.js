@@ -2,7 +2,7 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import users from "../Modals/Auth.js";
 import Invoice from "../Modals/Invoice.js";
-import { sendInvoiceEmail } from "../utils/email.js";
+import { sendInvoiceEmail, generateInvoiceHtml } from "../utils/email.js";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -235,5 +235,24 @@ export const cancelSubscription = async (req, res) => {
   } catch (error) {
     console.error("[api/payments] cancelSubscription error:", error);
     return res.status(500).json({ message: "Something went wrong." });
+  }
+};
+
+export const getInvoiceHtml = async (req, res) => {
+  const { invoiceId } = req.params;
+  try {
+    const invoice = await Invoice.findById(invoiceId);
+    if (!invoice) {
+      return res.status(404).send("<h1>Invoice not found</h1>");
+    }
+    const user = await users.findById(invoice.userId);
+    if (!user) {
+      return res.status(404).send("<h1>User not found for this invoice</h1>");
+    }
+    const html = generateInvoiceHtml(user, invoice);
+    return res.status(200).send(html);
+  } catch (error) {
+    console.error("getInvoiceHtml error:", error);
+    return res.status(500).send("<h1>Internal Server Error</h1>");
   }
 };
