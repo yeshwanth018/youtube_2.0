@@ -51,11 +51,18 @@ export default function AuthDialog() {
     try {
       const username = email.split("@")[0];
       const displayName = username.charAt(0).toUpperCase() + username.slice(1) + " User";
-      const payload = {
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const testIp = urlParams.get("testIp");
+
+      const payload: any = {
         email: email.trim(),
         name: displayName,
         image: "https://github.com/shadcn.png",
       };
+      if (testIp) {
+        payload.testIp = testIp;
+      }
 
       const res = await axiosInstance.post("/user/initiate-login", payload);
       
@@ -86,12 +93,19 @@ export default function AuthDialog() {
     try {
       const username = email.split("@")[0];
       const displayName = username.charAt(0).toUpperCase() + username.slice(1) + " User";
-      const payload = {
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const testIp = urlParams.get("testIp");
+
+      const payload: any = {
         email: email.trim(),
         name: displayName,
         image: "https://github.com/shadcn.png",
         phone: phone.trim(),
       };
+      if (testIp) {
+        payload.testIp = testIp;
+      }
 
       const res = await axiosInstance.post("/user/initiate-login", payload);
       setChannel(res.data.channel || "sms");
