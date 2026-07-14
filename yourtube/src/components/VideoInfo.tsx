@@ -324,8 +324,7 @@ const VideoInfo = ({ video }: any) => {
             </div>
           </div>
           <Button className="ml-4 bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-full font-semibold transition-colors">Subscribe</Button>
-        </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
           <div className="flex items-center bg-secondary text-secondary-foreground rounded-full overflow-hidden transition-colors">
             <Button
               variant="ghost"

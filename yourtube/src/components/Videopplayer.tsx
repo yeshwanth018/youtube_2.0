@@ -385,7 +385,7 @@ export default function VideoPlayer({ video, onPlayNext }: VideoPlayerProps) {
 
   return (
     <div className="flex flex-col gap-4 w-full lg:max-w-3xl">
-      <div className="relative w-full bg-black rounded-lg overflow-hidden h-48 lg:h-[360px]">
+      <div className="relative w-full bg-black rounded-lg overflow-hidden aspect-video">
         {/* Video wrapper with gesture overlay */}
         <div className="relative w-full h-full">
           {/* Professional visual gesture overlay with distinct hover zones */}
