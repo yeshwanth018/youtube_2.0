@@ -26,6 +26,13 @@ const FALLBACK_TEST_IP = "183.82.0.0";
  * and falls back to a known test IP when running on localhost.
  */
 function getClientIp(req) {
+  // Allow manual query or body parameter override for testing regions
+  const testIp = req.query?.testIp || req.body?.testIp;
+  if (testIp) {
+    console.log(`[checkUserRegion] Overriding client IP with test IP: ${testIp}`);
+    return testIp;
+  }
+
   // Prefer X-Forwarded-For header (first entry is the original client)
   const forwarded = req.headers["x-forwarded-for"];
   if (forwarded) {
@@ -50,14 +57,15 @@ function getClientIp(req) {
  * Checks if an IP address is a loopback / private address.
  */
 function isLocalIp(ip) {
+  if (!ip) return true;
+  const cleanIp = ip.replace(/^::ffff:/, "");
   return (
-    ip === "127.0.0.1" ||
-    ip === "::1" ||
-    ip === "::ffff:127.0.0.1" ||
-    ip === "localhost" ||
-    ip?.startsWith("192.168.") ||
-    ip?.startsWith("10.") ||
-    ip?.startsWith("172.")
+    cleanIp === "127.0.0.1" ||
+    cleanIp === "::1" ||
+    cleanIp === "localhost" ||
+    cleanIp.startsWith("192.168.") ||
+    cleanIp.startsWith("10.") ||
+    cleanIp.startsWith("172.")
   );
 }
 
