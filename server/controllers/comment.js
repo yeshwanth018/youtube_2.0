@@ -192,8 +192,11 @@ export const dislikecomment = async (req, res) => {
     targetComment.likes = likes;
     targetComment.dislikes = dislikes;
     
-    // Check if total dislikes is >= 2
-    if (dislikes.length >= 2) {
+    // Check if dislikes from other users is >= 2
+    const commentOwnerId = targetComment.userid ? targetComment.userid.toString() : "";
+    const otherDislikes = dislikes.filter(id => id !== commentOwnerId);
+    
+    if (otherDislikes.length >= 2) {
       targetComment.isDeleted = true;
       await targetComment.save();
       return res.status(200).json({ deleted: true });
