@@ -23,7 +23,7 @@ export default function CategoryTabs() {
   const [activeCategory, setActiveCategory] = useState("All");
 
   return (
-    <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide pb-2">
+    <div className="flex gap-2 mb-6 overflow-x-auto lg:flex-wrap scrollbar-hide pb-2">
       {categories.map((category) => {
         const isActive = activeCategory === category;
         return (
