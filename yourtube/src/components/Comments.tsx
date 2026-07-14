@@ -41,24 +41,7 @@ const Comments = ({ videoId }: any) => {
   const [translations, setTranslations] = useState<Record<string, { text: string; lang: string }>>({});
   const [translatingId, setTranslatingId] = useState<string | null>(null);
   const [targetLanguages, setTargetLanguages] = useState<Record<string, string>>({});
-  const fetchedComments = [
-    {
-      _id: "1",
-      videoid: videoId,
-      userid: "1",
-      commentbody: "Great video! Really enjoyed watching this.",
-      usercommented: "John Doe",
-      commentedon: new Date(Date.now() - 3600000).toISOString(),
-    },
-    {
-      _id: "2",
-      videoid: videoId,
-      userid: "2",
-      commentbody: "Thanks for sharing this amazing content!",
-      usercommented: "Jane Smith",
-      commentedon: new Date(Date.now() - 7200000).toISOString(),
-    },
-  ];
+
   useEffect(() => {
     setLoading(true);
     setComments([]);
@@ -67,11 +50,11 @@ const Comments = ({ videoId }: any) => {
 
   const loadComments = async () => {
     try {
-      // Fetch local comments (with new features: likes, dislikes, city)
+      // Fetch local comments
       const localRes = await axiosInstance.get(`/comment/${videoId}`);
       const localComments = localRes.data || [];
 
-      // Fetch previous remote comments from deployed backend
+      // Fetch remote comments via local server middleware
       let remoteComments: Comment[] = [];
       try {
         const remoteRes = await axiosInstance.get(`/comment/remote/${videoId}`);

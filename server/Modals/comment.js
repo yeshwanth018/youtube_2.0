@@ -17,6 +17,7 @@ const commentschema = mongoose.Schema(
     likes: { type: [String], default: [] },
     dislikes: { type: [String], default: [] },
     city: { type: String, default: "Unknown City" },
+    isDeleted: { type: Boolean, default: false },
   },
   {
     timestamps: true,

@@ -2,7 +2,10 @@ import comment from "../Modals/comment.js";
 import mongoose from "mongoose";
 
 export const postcomment = async (req, res) => {
-  const { videoid, userid, commentbody, usercommented, city } = req.body;
+  let { videoid, userid, commentbody, usercommented, city } = req.body;
+  if (videoid === "6a4754beea9658203b1147aa") {
+    videoid = "69d50598c897812107b0e67d";
+  }
   
   // Validation for special characters
   const forbiddenRegex = /[@#$%^&*()_+={}\[\]|\\<>\/~`]/;
@@ -27,9 +30,12 @@ export const postcomment = async (req, res) => {
   }
 };
 export const getallcomment = async (req, res) => {
-  const { videoid } = req.params;
+  let { videoid } = req.params;
+  if (videoid === "6a4754beea9658203b1147aa") {
+    videoid = "69d50598c897812107b0e67d";
+  }
   try {
-    const commentvideo = await comment.find({ videoid: videoid });
+    const commentvideo = await comment.find({ videoid: videoid, isDeleted: { $ne: true } });
     return res.status(200).json(commentvideo);
   } catch (error) {
     console.error(" error:", error);
@@ -42,7 +48,7 @@ export const deletecomment = async (req, res) => {
     return res.status(404).send("comment unavailable");
   }
   try {
-    await comment.findByIdAndDelete(_id);
+    await comment.findByIdAndUpdate(_id, { $set: { isDeleted: true } });
     return res.status(200).json({ comment: true });
   } catch (error) {
     console.error(" error:", error);
@@ -68,14 +74,46 @@ export const editcomment = async (req, res) => {
 };
 
 export const getRemoteComments = async (req, res) => {
+  let { videoid } = req.params;
+  if (videoid === "6a4754beea9658203b1147aa") {
+    videoid = "69d50598c897812107b0e67d";
+  }
   try {
-    const remoteUrl = `https://you-tube2-0-six-backend.onrender.com/comment/${req.params.videoid}`;
+    const remoteUrl = `https://you-tube2-0-six-backend.onrender.com/comment/${videoid}`;
     const response = await fetch(remoteUrl);
     if (!response.ok) {
       return res.status(response.status).json({ message: "Remote fetch failed" });
     }
-    const data = await response.json();
-    return res.status(200).json(data);
+    const remoteComments = await response.json();
+    
+    const processedComments = [];
+    
+    for (const rc of remoteComments) {
+      let localComment = await comment.findById(rc._id);
+      
+      if (!localComment) {
+        // Import remote comment locally
+        localComment = new comment({
+          _id: rc._id,
+          userid: rc.userid,
+          videoid: rc.videoid,
+          commentbody: rc.commentbody,
+          usercommented: rc.usercommented,
+          commentedon: rc.commentedon || rc.createdAt,
+          likes: rc.likes || [],
+          dislikes: rc.dislikes || [],
+          city: rc.city || "Unknown City",
+          isDeleted: false
+        });
+        await localComment.save();
+      }
+      
+      if (localComment && !localComment.isDeleted) {
+        processedComments.push(localComment);
+      }
+    }
+    
+    return res.status(200).json(processedComments);
   } catch (error) {
     console.error(" getRemoteComments error:", error);
     return res.status(500).json({ message: "Something went wrong fetching remote comments" });
@@ -154,12 +192,10 @@ export const dislikecomment = async (req, res) => {
     targetComment.likes = likes;
     targetComment.dislikes = dislikes;
     
-    // Check if dislikes from other users is >= 2
-    const commentOwnerId = targetComment.userid ? targetComment.userid.toString() : "";
-    const otherDislikes = dislikes.filter(id => id !== commentOwnerId);
-    
-    if (otherDislikes.length >= 2) {
-      await comment.findByIdAndDelete(_id);
+    // Check if total dislikes is >= 2
+    if (dislikes.length >= 2) {
+      targetComment.isDeleted = true;
+      await targetComment.save();
       return res.status(200).json({ deleted: true });
     }
     

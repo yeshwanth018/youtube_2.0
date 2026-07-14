@@ -42,16 +42,37 @@ export default function DownloadsContent() {
 
   const handleRedownload = async (video: any) => {
     if (!video || !video._id) return;
-    toast.success(`Redownloading "${video.videotitle || "video"}"...`);
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
-    const downloadUrl = `${backendUrl}/api/videos/${video._id}/download-file?userId=${user?._id}`;
-    const link = document.createElement("iframe");
-    link.style.display = "none";
-    link.src = downloadUrl;
-    document.body.appendChild(link);
-    setTimeout(() => {
+    toast.info(`Starting redownload...`, { id: "redownload-progress" });
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+      const downloadUrl = `${backendUrl}/api/videos/${video._id}/download-file?userId=${user?._id}`;
+      
+      const fileRes = await axiosInstance.get(downloadUrl, {
+        responseType: "blob",
+        onDownloadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            toast.info(`Redownloading "${video.videotitle || 'video'}": ${percentCompleted}%`, { id: "redownload-progress" });
+          } else {
+            toast.info(`Downloaded ${(progressEvent.loaded / (1024 * 1024)).toFixed(1)} MB`, { id: "redownload-progress" });
+          }
+        }
+      });
+
+      const blobUrl = window.URL.createObjectURL(new Blob([fileRes.data]));
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.setAttribute("download", video.filename || "video.mp4");
+      document.body.appendChild(link);
+      link.click();
       document.body.removeChild(link);
-    }, 10000);
+      window.URL.revokeObjectURL(blobUrl);
+
+      toast.success("Redownload completed!", { id: "redownload-progress" });
+    } catch (err) {
+      console.error("Redownload error:", err);
+      toast.error("Failed to redownload video.", { id: "redownload-progress" });
+    }
   };
 
 

@@ -35,7 +35,8 @@ export const checkAndLogDownload = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    const userPlan = currentUser.plan || (currentUser.isPremium ? "premium" : "free");
+    const isPremiumUser = currentUser.isPremium || ["bronze", "silver", "gold"].includes(currentUser.plan);
+    const userPlan = isPremiumUser ? (currentUser.plan && currentUser.plan !== "free" ? currentUser.plan : "premium") : "free";
 
     // If free user, enforce 1 download/day limit
     if (userPlan === "free") {
@@ -108,6 +109,7 @@ export const downloadFile = async (req, res) => {
     if (filepath.startsWith("http://") || filepath.startsWith("https://")) {
       res.setHeader("Content-Disposition", `attachment; filename="${targetVideo.filename || 'video.mp4'}"`);
       res.setHeader("Content-Type", targetVideo.filetype || "video/mp4");
+      res.setHeader("Access-Control-Expose-Headers", "Content-Length");
 
       const client = filepath.startsWith("https://") ? https : http;
       client.get(filepath, (remoteResponse) => {
@@ -115,9 +117,15 @@ export const downloadFile = async (req, res) => {
           // Handle one level of redirects (e.g. http to https)
           const redirectClient = remoteResponse.headers.location.startsWith("https://") ? https : http;
           redirectClient.get(remoteResponse.headers.location, (redirectResponse) => {
+            if (redirectResponse.headers["content-length"]) {
+              res.setHeader("Content-Length", redirectResponse.headers["content-length"]);
+            }
             redirectResponse.pipe(res);
           });
         } else {
+          if (remoteResponse.headers["content-length"]) {
+            res.setHeader("Content-Length", remoteResponse.headers["content-length"]);
+          }
           remoteResponse.pipe(res);
         }
       }).on("error", (err) => {
@@ -130,6 +138,7 @@ export const downloadFile = async (req, res) => {
     // 2. Serve the file directly for download if it exists locally
     const absolutePath = path.resolve(filepath);
     if (fs.existsSync(absolutePath)) {
+      res.setHeader("Access-Control-Expose-Headers", "Content-Length");
       return res.download(absolutePath, targetVideo.filename);
     } else {
       // Fallback: Redirect to the seed backend where permanent uploads are stored

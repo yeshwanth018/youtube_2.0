@@ -51,21 +51,35 @@ const VideoInfo = ({ video }: any) => {
       console.log("[Download] Authorization response:", res.data);
 
       if (res.data.download) {
-        toast.success("Download starting...");
+        toast.info("Starting download in browser...", { id: "download-progress" });
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
         const downloadUrl = `${backendUrl}/api/videos/${video._id}/download-file?userId=${user?._id}`;
         console.log("[Download] Triggering file stream from:", downloadUrl);
         
-        // Use a hidden iframe to bypass popup blockers
-        const iframe = document.createElement("iframe");
-        iframe.style.display = "none";
-        iframe.src = downloadUrl;
-        document.body.appendChild(iframe);
-        
-        // Clean up the iframe after 10 seconds
-        setTimeout(() => {
-          document.body.removeChild(iframe);
-        }, 10000);
+        // Fetch the file as blob with progress monitoring
+        const fileRes = await axiosInstance.get(downloadUrl, {
+          responseType: "blob",
+          onDownloadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+              toast.info(`Downloading "${video.videotitle || 'video'}": ${percentCompleted}%`, { id: "download-progress" });
+            } else {
+              toast.info(`Downloaded ${(progressEvent.loaded / (1024 * 1024)).toFixed(1)} MB`, { id: "download-progress" });
+            }
+          }
+        });
+
+        // Trigger save dialog
+        const blobUrl = window.URL.createObjectURL(new Blob([fileRes.data]));
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.setAttribute("download", video.filename || "video.mp4");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+
+        toast.success("Download completed!", { id: "download-progress" });
       }
     } catch (error: any) {
       console.error("[Download] Request failed:", error);
