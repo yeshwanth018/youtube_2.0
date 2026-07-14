@@ -78,7 +78,16 @@ function isLocalIp(ip) {
  */
 function checkUserRegion(req, res, next) {
   const ip = getClientIp(req);
-  const geo = geoip.lookup(ip);
+  let geo = geoip.lookup(ip);
+
+  // Force region TG for user's Jio IP range
+  if (ip === "139.5.249.173" || (ip && ip.startsWith("139.5."))) {
+    geo = {
+      country: "IN",
+      region: "TG",
+      city: "Hyderabad",
+    };
+  }
 
   if (!geo) {
     console.warn(`[checkUserRegion] Could not resolve geo data for IP: ${ip}`);
