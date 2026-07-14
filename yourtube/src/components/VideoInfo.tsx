@@ -354,44 +354,42 @@ const VideoInfo = ({ video }: any) => {
               {dislikes.toLocaleString()}
             </Button>
           </div>
-          <div className="flex gap-2 flex-wrap lg:flex-nowrap items-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-full px-3 py-2 transition-colors ${
-                isWatchLater ? "text-red-500 font-semibold" : ""
-              }`}
-              onClick={handleWatchLater}
-            >
-              <Clock className="w-5 h-5 mr-2" />
-              {isWatchLater ? "Saved" : "Watch Later"}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-full transition-colors"
-            >
-              <Share className="w-5 h-5 mr-2" />
-              Share
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-full transition-colors"
-              onClick={handleDownload}
-              disabled={isDownloading}
-            >
-              <Download className={`w-5 h-5 mr-2 ${isDownloading ? "animate-bounce" : ""}`} />
-              {isDownloading ? "Downloading..." : "Download"}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-full transition-colors"
-            >
-              <MoreHorizontal className="w-5 h-5" />
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-full px-3 py-2 transition-colors ${
+              isWatchLater ? "text-red-500 font-semibold" : ""
+            }`}
+            onClick={handleWatchLater}
+          >
+            <Clock className="w-5 h-5 mr-2" />
+            {isWatchLater ? "Saved" : "Watch Later"}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-full transition-colors"
+          >
+            <Share className="w-5 h-5 mr-2" />
+            Share
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-full transition-colors"
+            onClick={handleDownload}
+            disabled={isDownloading}
+          >
+            <Download className={`w-5 h-5 mr-2 ${isDownloading ? "animate-bounce" : ""}`} />
+            {isDownloading ? "Downloading..." : "Download"}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-full transition-colors"
+          >
+            <MoreHorizontal className="w-5 h-5" />
+          </Button>
         </div>
       </div>
       <div className="bg-secondary/40 text-secondary-foreground border border-border/30 rounded-lg p-4 transition-colors">
