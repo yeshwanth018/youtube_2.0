@@ -22,6 +22,14 @@ export async function sendOtpEmail(email, otp, name) {
 
   // ── No real SMTP → Ethereal test account ──
   if (!host || !user_email || !pass) {
+    // Print fallback log instantly so testers don't have to wait for SMTP timeouts
+    console.log(`\n[OTP EMAIL FALLBACK] To: ${email} | OTP: ${otp}\n`);
+
+    // If on Render where outbound SMTP is blocked, return immediately to prevent 30s timeouts
+    if (process.env.RENDER || process.env.NODE_ENV === "production") {
+      return;
+    }
+
     try {
       const testAccount = await nodemailer.createTestAccount();
       const etherealTransporter = nodemailer.createTransport({

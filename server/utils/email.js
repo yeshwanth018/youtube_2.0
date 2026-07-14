@@ -163,9 +163,16 @@ export const sendInvoiceEmail = async (user, invoice) => {
   const from = process.env.EMAIL_FROM || "Your-Tube <no-reply@yourtube.com>";
 
   if (!host || !user_email || !pass) {
-    // ── Ethereal Email: auto-generated test account ──
-    // No real SMTP configured — use Ethereal to capture a real email
-    // and generate a browser-viewable preview URL.
+    // Ultimate fallback — log the details immediately to bypass SMTP connection timeouts on Render
+    console.log("\n=== EMAIL LOG FALLBACK ===");
+    console.log(`To: ${email} | Plan: ${planSelected.toUpperCase()} | ₹${amountPaid}`);
+    console.log(`Invoice: ${invoiceId} | Payment: ${paymentId}\n`);
+
+    // If on Render where outbound SMTP is blocked, return immediately
+    if (process.env.RENDER || process.env.NODE_ENV === "production") {
+      return;
+    }
+
     try {
       const testAccount = await nodemailer.createTestAccount();
 
