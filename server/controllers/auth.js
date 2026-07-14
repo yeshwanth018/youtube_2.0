@@ -14,6 +14,13 @@ export const initiateLogin = async (req, res) => {
     return res.status(400).json({ message: "Email is required" });
   }
 
+  if (phone) {
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(phone.trim())) {
+      return res.status(400).json({ message: "Invalid phone number. Must be exactly 10 digits." });
+    }
+  }
+
   try {
     // Find or create the user first
     let user = await users.findOne({ email });

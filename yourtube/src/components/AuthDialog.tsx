@@ -89,6 +89,14 @@ export default function AuthDialog() {
   const handleSendPhoneOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!phone.trim()) return;
+
+    // Validate phone number is exactly 10 digits
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(phone.trim())) {
+      toast.error("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+
     setLoading(true);
     try {
       const username = email.split("@")[0];
